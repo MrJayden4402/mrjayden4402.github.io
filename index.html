@@ -1,37 +1,55 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>TIME:</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            margin-top: 100px;
-        }
+  <meta charset="UTF-8" />
+  <title>当前时间</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #fce4ec, #fffde7); /* 柔和渐变 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
 
-        #clock {
-            font-size: 48px;
-            color: #333;
-        }
-    </style>
+    .container {
+      background: #fffaf5;
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .title {
+      font-size: 28px;
+      color: #6a4e77;
+      margin-bottom: 20px;
+    }
+
+    .time {
+      font-size: 48px;
+      color: #4b3f5a;
+      letter-spacing: 2px;
+    }
+  </style>
 </head>
-
 <body>
-    <h1>TIME:</h1>
-    <div id="clock">LOADING...</div>
+  <div class="container">
+    <div class="title">Welcome to Jayden's page</div>
+    <div class="time" id="clock">加载中...</div>
+  </div>
 
-    <script>
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString();
-            document.getElementById('clock').textContent = timeString;
-        }
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      document.getElementById('clock').textContent = timeString;
+    }
 
-        setInterval(updateClock, 1000);
-        updateClock(); // ��ʼ��һ��
-    </script>
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
 </body>
-
 </html>
