@@ -1,1 +1,412 @@
 
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <title>留言板 — 方形短卡（移动优先）</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <style>
+    :root {
+      --bg1: #f6eef8;
+      --bg2: #fffdf8;
+      --card: #fffaf5;
+      --accent: #6a4e77;
+      --accent-dark: #4b3f5a;
+      --muted: #7a6b80;
+      --bubble-me-start: #8b5fa8;
+      --bubble-me-end: #6a4e77;
+      --bubble-them: #ffffff;
+      --radius: 18px;
+      /* 卡片圆角 */
+      --inner-radius: 12px;
+      /* 内部区域圆角 */
+      --max-width: 520px;
+      /* 桌面最大宽度 */
+      --card-size: min(86vw, 460px);
+      /* 保证尽量方：宽高相近 */
+      --card-height: min(62vh, 420px);
+      /* 不太长，限制高度 */
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background:
+        radial-gradient(900px 420px at 10% 10%, rgba(139, 95, 168, 0.06), transparent 12%),
+        radial-gradient(800px 380px at 90% 90%, rgba(106, 78, 119, 0.05), transparent 14%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    /* 中央短方卡片：尽量方正、并在移动端看起来不高 */
+    .center-card {
+      width: var(--card-size);
+      height: calc(min(var(--card-size), var(--card-height)));
+      max-width: var(--max-width);
+      background: linear-gradient(180deg, #fffaf5, #fbf6fb);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 36px rgba(99, 72, 124, 0.10);
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    /* 顶栏紧凑 */
+    .header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 6px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      flex: 0 0 auto;
+    }
+
+    .title {
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 800
+    }
+
+    .sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 6px;
+      opacity: 0.95
+    }
+
+    /* 聊天区：在短高卡片中占主要可滚动空间 */
+    .chat-wrap {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(252, 228, 236, 0.05), rgba(255, 253, 231, 0.01));
+      border-radius: var(--inner-radius);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .row-left {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .row-right {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      word-break: break-word;
+      background: var(--card);
+      color: var(--accent-dark);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .bubble.me {
+      background: linear-gradient(180deg, var(--bubble-me-start), var(--bubble-me-end));
+      color: #fff;
+      border-bottom-right-radius: 6px;
+    }
+
+    .bubble.them {
+      background: linear-gradient(180deg, var(--bubble-them), #fffcf9);
+      color: var(--accent-dark);
+      border: 1px solid rgba(120, 100, 130, 0.03);
+    }
+
+    .meta {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 6px
+    }
+
+    .meta.light {
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* 底部 composer：保持紧凑且在小屏上易点击 */
+    .composer {
+      padding: 8px;
+      background: linear-gradient(180deg, #fff, #fbfbfb);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border-bottom-left-radius: calc(var(--radius) - 2px);
+      border-bottom-right-radius: calc(var(--radius) - 2px);
+      flex: 0 0 auto;
+    }
+
+    .label {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 0 6px;
+      flex: 0 0 auto;
+    }
+
+    .input {
+      flex: 1;
+      min-height: 40px;
+      max-height: 96px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      resize: none;
+      font-size: 14px;
+      line-height: 1.3;
+      color: var(--accent-dark);
+      outline: none;
+    }
+
+    .send-btn {
+      flex: 0 0 auto;
+      background: linear-gradient(180deg, #7b5fa3, var(--bubble-me-end));
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(106, 78, 119, 0.10);
+    }
+
+    .send-btn:active {
+      transform: translateY(1px);
+    }
+
+    #status {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    /* 更积极的移动端优化：竖屏优先，横屏时允许更方 */
+    @media (max-width:420px) {
+      :root {
+        --card-size: 92vw;
+        --card-height: 62vh;
+      }
+
+      .title {
+        font-size: 14px
+      }
+
+      .input {
+        min-height: 44px
+      }
+
+      .chat-wrap {
+        padding: 10px;
+        gap: 6px
+      }
+
+      .bubble {
+        font-size: 13px
+      }
+    }
+
+    @media (min-width:900px) {
+      :root {
+        --card-size: min(70vw, 520px);
+        --card-height: min(60vh, 460px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="center-card" role="main" aria-label="留言板卡片">
+    <div class="header" role="banner">
+      <div class="title">留言板</div>
+    </div>
+
+    <div class="chat-wrap" id="chat" aria-live="polite">
+      <div class="empty" id="emptyTip">暂无留言</div>
+    </div>
+
+    <div id="status" aria-hidden="false"></div>
+
+    <div class="composer" role="form" aria-label="输入栏">
+      <!-- <div class="label">你（A）</div> -->
+      <textarea id="messageInput" class="input" placeholder="输入消息..." aria-label="留言输入" rows="1"></textarea>
+      <button class="send-btn" onclick="SetClickState()">提交留言</button>
+    </div>
+  </div>
+
+  <script>
+    /***** 数据结构与公开 API *****/
+    // 全局消息数组（按时间顺序追加）
+    // 每项格式：{ user: 'A'|'B', text: string, time: number }
+    window.messageStore = window.messageStore || [];
+
+    // 供外部实现/填充的函数名（页面会每 5s 调用）
+    window.UpdateMessage = window.UpdateMessage || function (/* store */) { };
+
+    // 提交消息的全局函数（用于页面按钮或外部调用）
+    window.SubmitMessage = SubmitMessage;
+
+    /***** 内部渲染控制 *****/
+    const chat = document.getElementById('chat');
+    const emptyTip = document.getElementById('emptyTip');
+    const statusEl = document.getElementById('status');
+    const inputEl = document.getElementById('messageInput');
+
+    let lastRenderedIndex = 0;
+
+    function renderFrom(startIndex) {
+      if (!Array.isArray(window.messageStore)) return;
+      const store = window.messageStore;
+      for (let i = startIndex; i < store.length; i++) {
+        const entry = store[i];
+        if (!entry || typeof entry.text !== 'string') continue;
+        addBubble(entry);
+      }
+      lastRenderedIndex = store.length;
+      if (lastRenderedIndex === 0 && emptyTip) {
+        emptyTip.style.display = '';
+      } else if (emptyTip) {
+        emptyTip.style.display = 'none';
+      }
+      scrollToBottom();
+    }
+
+    function addBubble(entry) {
+      const wrapper = document.createElement('div');
+      const isMe = false;
+      wrapper.className = isMe ? 'row-right' : 'row-left';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
+
+      const meta = document.createElement('div');
+      meta.className = isMe ? 'meta' : 'meta light';
+      meta.textContent = `用户 ${entry.user} · ${new Date(entry.time || Date.now()).toLocaleString()}`;
+      const content = document.createElement('div');
+      content.textContent = entry.text;
+
+      bubble.appendChild(meta);
+      bubble.appendChild(content);
+      wrapper.appendChild(bubble);
+      chat.appendChild(wrapper);
+    }
+
+    function scrollToBottom() {
+      requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
+    }
+
+    const POLL_INTERVAL = 100;
+    let time_pt = Date.now();
+
+
+    let hasBeenClicked = false;
+
+    function SetClickState() {
+      hasBeenClicked = true;
+    }
+
+
+    function invokeUpdateMessage() {
+
+      if (hasBeenClicked) {
+        SubmitMessage();
+        hasBeenClicked = false;
+        time_pt = Date.now();
+      }
+      if (Date.now() - time_pt > 5000) {
+        window.UpdateMessage(window.messageStore);
+        time_pt = Date.now();
+      }
+
+    }
+
+    const updateTimer = setInterval(invokeUpdateMessage, POLL_INTERVAL);
+    invokeUpdateMessage();
+
+    window.messageStore = window.messageStore;
+    window._lastRenderedIndex = () => lastRenderedIndex;
+    window._renderFrom = renderFrom;
+
+
+
+    function UpdateMessage(store) {
+
+      // store.length = 0;
+
+      const entry = { user: 'A', text: 'HEllo World', time: Date.now() };
+
+      store.push(entry);
+
+      // 清空 DOM 并从 0 渲染，避免重复追加（确保渲染函数存在）
+      const chat = document.getElementById('chat');
+      if (chat) chat.innerHTML = '<div class="empty" id="emptyTip"></div>';
+
+
+      renderFrom(0);
+    }
+
+    /***** 全局调用接口实现 *****/
+    function SubmitMessage() {
+      const text = inputEl.value;
+      if (!text || !text.trim()) {
+        return;
+      }
+
+      const entry = { user: 'B', text: text.trim(), time: Date.now() };
+      console.log(`用户 A 提交: ${entry.text}`);
+
+      window.messageStore.push(entry);
+
+
+      // alert('call Submit');
+
+
+      renderFrom(lastRenderedIndex);
+
+      inputEl.value = '';
+    }
+
+
+
+
+  </script>
+</body>
+
+</html>
